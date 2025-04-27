@@ -117,7 +117,7 @@ app.post('/signin', async (req, res) => {
 });
 
 // Use routes
-app.use('/posts', post);
+app.use('/allnews', post);
 app.use('/item', orderRoutes); // Use the order routes
 app.use('/home', home); // Use the order routes
 app.use('/new', New); // Use the order routes

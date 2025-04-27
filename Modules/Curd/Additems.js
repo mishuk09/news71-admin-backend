@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express.Router();
-const Post = require('../../Schema/Post');
+const Allnews = require('../../Schema/Allnews');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
@@ -21,7 +21,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: 'Allitems',
+        folder: 'Allnews',
         format: async (req, file) => 'png',
         public_id: (req, file) => `${file.originalname}-${Date.now()}`,
     },
@@ -32,20 +32,17 @@ const parser = multer({ storage: storage });
 
 // Add a new post (with multiple images)
 app.post('/add', parser.array('images', 10), async (req, res) => {
-    const { category, title, newPrice, oldPrice, stock, color, size, description } = req.body;
+    const { category, divission, district, upazila, description } = req.body;
 
     // Collect all uploaded image paths
     const img = req.files.map(file => file.path);
 
-    const newPost = new Post({
+    const newPost = new Allnews({
         img,
         category,
-        title,
-        newPrice,
-        oldPrice,
-        stock,
-        color: color ? color.split(',') : [],
-        size: size ? size.split(',') : [],
+        divission,
+        district,
+        upazila,
         description
     });
 
@@ -91,7 +88,7 @@ app.get("/search", async (req, res) => {
         let query = req.query.q?.trim();
         if (!query) return res.status(400).json({ message: "Search query is required" });
 
-        const allItems = await Post.find({}); // Fetch all items
+        const allItems = await Allnews.find({}); // Fetch all items
         const fuse = new Fuse(allItems, { keys: ["title"], threshold: 0.3 });
 
         const results = fuse.search(query).map(result => result.item);
@@ -106,7 +103,7 @@ app.get("/search", async (req, res) => {
 
 // Read all posts
 app.get('/', (req, res) => {
-    Post.find()
+    Allnews.find()
         .then(posts => res.json(posts))
         .catch(err => res.status(400).json('Error: ' + err));
 });
@@ -117,7 +114,7 @@ app.get('/', (req, res) => {
 
 // Read a single post
 app.get('/:id', (req, res) => {
-    Post.findById(req.params.id)
+    Allnews.findById(req.params.id)
         .then(post => res.json(post))
         .catch(err => res.status(400).json('Error: ' + err));
 });
@@ -129,7 +126,7 @@ app.get('/:id', (req, res) => {
 // Update a post with multiple images
 app.post('/update/:id', parser.array('images', 10), async (req, res) => {
     try {
-        const post = await Post.findById(req.params.id);
+        const post = await Allnews.findById(req.params.id);
         if (!post) return res.status(404).json({ message: 'Post not found' });
 
         // Add new images to the existing array if uploaded
@@ -190,7 +187,7 @@ app.post('/update/:id', parser.array('images', 10), async (req, res) => {
 
 // Delete a post
 app.delete('/:id', (req, res) => {
-    Post.findByIdAndDelete(req.params.id)
+    Allnews.findByIdAndDelete(req.params.id)
         .then(() => res.json('Post deleted.'))
         .catch(err => res.status(400).json('Error: ' + err));
 });
